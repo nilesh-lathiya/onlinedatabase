@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:onlinedatabase/frist.dart';
 
 class insert extends StatefulWidget {
   const insert({Key? key}) : super(key: key);
@@ -14,8 +17,8 @@ class _insertState extends State<insert> {
   final ImagePicker _picker = ImagePicker();
   String path = "";
 
-  TextEditingController name=TextEditingController();
-  TextEditingController contact=TextEditingController();
+  TextEditingController tname=TextEditingController();
+  TextEditingController tcontact=TextEditingController();
 
 
   @override
@@ -28,7 +31,7 @@ class _insertState extends State<insert> {
             child: TextField(onChanged: (value) {
 
             },
-              controller: name,
+              controller: tname,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: "enter name",
@@ -41,7 +44,7 @@ class _insertState extends State<insert> {
             child: TextField(onChanged: (value) {
 
             },
-              controller: contact,
+              controller: tcontact,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: "enter contact",
@@ -105,11 +108,47 @@ class _insertState extends State<insert> {
                     height: 100,
                     width: 100,
                     fit: BoxFit.fill,
-                  ),
+                  )
                 )
             ),
           ),
-          ElevatedButton(onPressed: () {
+          ElevatedButton(onPressed: () async {
+            String nam=tname.text;
+            String cnt=tcontact.text;
+            DateTime dt= DateTime.now();
+            String imagname = "$nam${dt.year}${dt.month}${dt.day}${dt.hour}${dt.minute}${dt.second}.jpg";
+            var formData = FormData.fromMap({
+              'name': nam,
+              'contact': cnt,
+              'file': await MultipartFile.fromFile(path, filename: imagname),
+            });
+            var response = await  Dio().post('https://theweb94284.000webhostapp.com/nil/insert.php', data: formData);
+
+            print(response.data);
+            Map m = jsonDecode(response.data);
+            int connection = m['connection'];
+
+            if(connection == 1)
+            {
+              int result = m['result'];
+
+              if(result == 1)
+              {
+                print("Data Inserted...");
+
+                Navigator.pushReplacement(context, MaterialPageRoute(
+                  builder: (context) {
+                    return frist();
+                  },
+                ));
+              }
+              else{
+                print("Data Not Inserted");
+              }
+            }
+
+
+
 
           }, child:Text("Insert"))
 
